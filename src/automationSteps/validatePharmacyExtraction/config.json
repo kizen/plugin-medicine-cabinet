@@ -1,0 +1,26 @@
+{
+  "name": "Validate Pharmacy Extraction",
+  "plugin_description": "Validates the structure and types of a pharmacy extraction JSON array",
+  "action_description": "Validates each pharmacy entry in an extracted pharmacies JSON string for required fields, types, and enum values",
+  "runtime": "python-3-13",
+  "action_type": "create_event",
+  "script": "script.py",
+  "inputs": [
+    {
+      "name": "extracted_pharmacies_json",
+      "data_type": "string",
+      "label": "Extracted Pharmacies JSON",
+      "description": "JSON array string of pharmacy objects to validate, each with name, type, usage_status, geographic_search, etc.",
+      "required": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "invalid_json",
+      "data_type": "boolean",
+      "label": "Invalid JSON",
+      "description": "True if the input failed validation, false if it passed",
+      "required": false
+    }
+  ]
+}

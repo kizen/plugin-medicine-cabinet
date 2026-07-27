@@ -1,0 +1,5 @@
+{
+  "name": "Remove Provider",
+  "api_name": "remove_provider",
+  "hint_object_name": "providers_provider, client_client"
+}

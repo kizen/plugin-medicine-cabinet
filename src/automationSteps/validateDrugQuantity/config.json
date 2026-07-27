@@ -1,0 +1,47 @@
+{
+  "name": "Validate Drug Quantity",
+  "plugin_description": "Validates the medication frequency/quantity/cost JSON output from extraction",
+  "action_description": "Validates the structure, types, and enum values of a refill extraction JSON string",
+  "runtime": "python-3-13",
+  "action_type": "create_event",
+  "script": "script.py",
+  "inputs": [
+    {
+      "name": "refill_extraction_json",
+      "data_type": "string",
+      "label": "Refill Extraction JSON",
+      "description": "JSON string output from the refill extraction step to validate",
+      "required": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "invalid_json",
+      "data_type": "boolean",
+      "label": "Invalid JSON",
+      "description": "True if the input failed validation, false if it passed",
+      "required": false
+    },
+    {
+      "name": "quantity",
+      "data_type": "number",
+      "label": "Quantity",
+      "description": "Extracted medication quantity (only set when validation passes)",
+      "required": false
+    },
+    {
+      "name": "frequency",
+      "data_type": "number",
+      "label": "Frequency (Days)",
+      "description": "Extracted frequency in days — one of 30, 60, 90, 180, 360 (only set when validation passes)",
+      "required": false
+    },
+    {
+      "name": "refill_extraction_notes",
+      "data_type": "string",
+      "label": "Refill Extraction Notes",
+      "description": "Extraction notes from the validated output (only set when validation passes)",
+      "required": false
+    }
+  ]
+}

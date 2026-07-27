@@ -1,0 +1,118 @@
+{
+  "name": "Lookup Drug",
+  "plugin_description": "Integrates with FDA API to look up a drug by name and dosage",
+  "action_description": "Search the FDA NDC database for a single drug entry and return the match result — no records are created or modified",
+  "runtime": "python-3-13",
+  "action_type": "create_event",
+  "secrets": [],
+  "script": "script.py",
+  "inputs": [
+    {
+      "name": "transcript_name",
+      "data_type": "string",
+      "label": "Transcript Name",
+      "description": "Drug name as the contact said it, lowercased",
+      "required": true
+    },
+    {
+      "name": "generic_name",
+      "data_type": "string",
+      "label": "Generic Name",
+      "description": "Generic name of the drug, including salt forms",
+      "required": false
+    },
+    {
+      "name": "brand_name",
+      "data_type": "string",
+      "label": "Brand Name",
+      "description": "Brand name of the drug",
+      "required": false
+    },
+    {
+      "name": "form",
+      "data_type": "string",
+      "label": "Form",
+      "description": "Dosage form (e.g. tablet, capsule)",
+      "required": false
+    },
+    {
+      "name": "dosage",
+      "data_type": "string",
+      "label": "Dosage",
+      "description": "Dosage strength (e.g. '20 mg/1')",
+      "required": false
+    }
+  ],
+  "outputs": [
+    {
+      "name": "match_status",
+      "data_type": "string",
+      "label": "Match Status",
+      "description": "Result of the lookup: 'Match', 'No Match', or 'Ambiguous'",
+      "required": false
+    },
+    {
+      "name": "ndc",
+      "data_type": "string",
+      "label": "NDC",
+      "description": "Normalized 11-digit NDC if matched, otherwise null",
+      "required": false
+    },
+    {
+      "name": "drug_label",
+      "data_type": "string",
+      "label": "Drug Label",
+      "description": "Human-readable drug label if matched (brand + form + strength)",
+      "required": false
+    },
+    {
+      "name": "form",
+      "data_type": "string",
+      "label": "Form",
+      "description": "Dosage form (e.g. tablet, capsule) if matched, otherwise null",
+      "required": false
+    },
+    {
+      "name": "dosage",
+      "data_type": "string",
+      "label": "Dosage",
+      "description": "Dosage strength (e.g. '20 mg/1') if matched, otherwise null",
+      "required": false
+    },
+    {
+      "name": "package_description",
+      "data_type": "string",
+      "label": "Package Description",
+      "description": "Description of the selected package when matched (e.g. '30 TABLET in 1 BOTTLE')",
+      "required": false
+    },
+    {
+      "name": "failure_reason",
+      "data_type": "string",
+      "label": "Failure Reason",
+      "description": "Machine code for why the match did not resolve: 'no_match', 'ambiguous_name', 'ambiguous_form', 'ambiguous_dosage', 'ambiguous_package', or 'api_error'",
+      "required": false
+    },
+    {
+      "name": "failure_message",
+      "data_type": "string",
+      "label": "Failure Message",
+      "description": "Human-readable explanation of why the match failed, ready for display",
+      "required": false
+    },
+    {
+      "name": "candidate_matches",
+      "data_type": "string",
+      "label": "Candidate Matches",
+      "description": "JSON array of display strings when match_status is 'Ambiguous': drug names for 'ambiguous_name', form names for 'ambiguous_form', dosage strengths for 'ambiguous_dosage', package descriptions for 'ambiguous_package'",
+      "required": false
+    },
+    {
+      "name": "candidate_count",
+      "data_type": "number",
+      "label": "Candidate Count",
+      "description": "Number of drugs that the lookup resulted in. For a 'Match' this should be 1, for 'No Match' this should be 0, and for 'Ambiguous' this should be >1",
+      "required": false
+    }
+  ]
+}

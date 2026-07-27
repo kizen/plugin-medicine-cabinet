@@ -1,0 +1,26 @@
+{
+  "name": "Validate Provider Extraction",
+  "plugin_description": "Validates the structure and types of a provider search plan extraction JSON array",
+  "action_description": "Validates each provider search plan in an extracted providers JSON string for required fields, types, and enum values",
+  "runtime": "python-3-13",
+  "action_type": "create_event",
+  "script": "script.py",
+  "inputs": [
+    {
+      "name": "provider_extraction_json",
+      "data_type": "string",
+      "label": "Provider Extraction JSON",
+      "description": "JSON array string of provider search plan objects to validate, each with name, status, review_needed, geographic_search, etc.",
+      "required": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "invalid_json",
+      "data_type": "boolean",
+      "label": "Invalid JSON",
+      "description": "True if the input failed validation, false if it passed",
+      "required": false
+    }
+  ]
+}

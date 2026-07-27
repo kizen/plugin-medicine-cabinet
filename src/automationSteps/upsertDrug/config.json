@@ -1,0 +1,61 @@
+{
+  "name": "Upsert Drug",
+  "plugin_description": "Creates or updates a medication record in Kizen and optionally links it to a drug reference record.",
+  "action_description": "Upserts a medication record in the Medications object using the NDC, quantity, and frequency as the lookup key. Optionally links the resulting medication record to the given drug reference record.",
+  "runtime": "python-3-13",
+  "action_type": "create_event",
+  "script": "script.py",
+  "inputs": [
+    {
+      "name": "matched_ndc",
+      "data_type": "string",
+      "label": "Matched NDC",
+      "description": "Normalized 11-digit NDC of the matched drug",
+      "required": true
+    },
+    {
+      "name": "drug_label",
+      "data_type": "string",
+      "label": "Drug Label",
+      "description": "Human-readable drug label (brand + form + strength)",
+      "required": false
+    },
+    {
+      "name": "qty",
+      "data_type": "string",
+      "label": "Quantity",
+      "description": "Quantity prescribed (numeric string)",
+      "required": true
+    },
+    {
+      "name": "freq",
+      "data_type": "string",
+      "label": "Frequency (days)",
+      "description": "Supply frequency in days (one of: 30, 60, 90, 180, 360)",
+      "required": true
+    },
+    {
+      "name": "ref_name",
+      "data_type": "string",
+      "label": "Reference Name",
+      "description": "Name of the drug reference record to link to the upserted medication",
+      "required": false
+    },
+    {
+      "name": "call_summary_name",
+      "data_type": "string",
+      "label": "Call Summary Name",
+      "description": "Name of the call summary record to link to the upserted medication",
+      "required": false
+    }
+  ],
+  "outputs": [
+    {
+      "name": "medication_id",
+      "data_type": "string",
+      "label": "Medication ID",
+      "description": "Kizen record ID of the created or updated medication record",
+      "required": false
+    }
+  ]
+}

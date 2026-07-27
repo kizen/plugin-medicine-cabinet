@@ -1,0 +1,75 @@
+{
+  "name": "Upsert Provider",
+  "plugin_description": "Creates or updates a provider record in Kizen and optionally links it to a provider reference record.",
+  "action_description": "Upserts a provider record in the Providers object using the NPI as the lookup key. Optionally links the resulting provider record to the given provider reference record.",
+  "runtime": "python-3-13",
+  "action_type": "create_event",
+  "script": "script.py",
+  "inputs": [
+    {
+      "name": "matched_npi",
+      "data_type": "string",
+      "label": "Matched NPI",
+      "description": "NPI of the provider to upsert",
+      "required": true
+    },
+    {
+      "name": "matched_provider_name",
+      "data_type": "string",
+      "label": "Matched Provider Name",
+      "description": "Full name of the matched provider",
+      "required": false
+    },
+    {
+      "name": "matched_street",
+      "data_type": "string",
+      "label": "Matched Street",
+      "description": "Practice street address of the matched provider",
+      "required": false
+    },
+    {
+      "name": "matched_city",
+      "data_type": "string",
+      "label": "Matched City",
+      "description": "Practice city of the matched provider",
+      "required": false
+    },
+    {
+      "name": "matched_state",
+      "data_type": "string",
+      "label": "Matched State",
+      "description": "Practice state of the matched provider",
+      "required": false
+    },
+    {
+      "name": "matched_zip",
+      "data_type": "string",
+      "label": "Matched Zip",
+      "description": "Practice zip code of the matched provider",
+      "required": false
+    },
+    {
+      "name": "ref_name",
+      "data_type": "string",
+      "label": "Reference Name",
+      "description": "Name of the provider reference record to link to the upserted provider",
+      "required": false
+    },
+    {
+      "name": "call_summary_name",
+      "data_type": "string",
+      "label": "Call Summary Name",
+      "description": "Name of the call summary record to link to the upserted provider",
+      "required": false
+    }
+  ],
+  "outputs": [
+    {
+      "name": "provider_id",
+      "data_type": "string",
+      "label": "Provider ID",
+      "description": "Kizen record ID of the created or updated provider record",
+      "required": false
+    }
+  ]
+}

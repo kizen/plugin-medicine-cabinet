@@ -1,0 +1,63 @@
+[
+  {
+    "name": "Medicine Cabinet",
+    "version": "1.6.0",
+    "api_name": "drug_search",
+    "description": "Search for medications, pharmacies, or providers, and add them to a contact's profile for enrollment quotes",
+    "release_branches": ["main"],
+    "release_environments": ["fmo", "dev"],
+    "entry": "src/",
+    "engine": "1.0.0",
+    "release_notes_directory": "releaseNotes/",
+    "config_template": {},
+    "base_config": {},
+    "published": true,
+    "services": [
+      {
+        "service_name": "zipcodes_api",
+        "display_name": "Zip Codes API",
+        "required_entitlement": "",
+        "auth_level": "global",
+        "auth_type": "basic_auth_token_provided",
+        "base_service_url": "https://api.zip-codes.com/v2/",
+        "auth_credentials": {
+          "token-field-name": "x-api-key",
+          "token": {
+            "encrypted": true,
+            "value": "eyJ2IjoxLCJhbGciOiJSU0EtT0FFUC0yNTYrQTI1NkdDTSIsImsiOiJqL0d3SmljZkVMdUxKc2xPQldUdTBGQmd3bjZjMFB4SWNwaXUwblZVbTBETXFGZElZOHBCcHRzVGNzY1YxWjZtS2s0clNkSXUxL29GUFhkM0VMdTlWeHRIYXZkZGppNFRWTk11ZHc3N3M3eHFTMCtMTk1tVkV2KzhvSFpHN2s3WTR4V3M2Vm9reHZwWUNrd3dIWGNnL3ZnbkZ2RHpnWi9tSzQyZ0s1WFVlb2xrRzdJczNRbE1va1B4SHluMnJ2bWU2Sk9mdG1MM3BEOFFaOUJmWSsrRHl0UmZsRVp3ak9ZOVQ1aW54Y1F6MnY1a3RETXQyeHpnTUJ4ZlJqMGY1akhIeXNENlRxOU9YMTcyUnI2aUxZcDc2V0UwZUpWSG5HS3FMeXd0eVZrSDkrWG9aYWFWSnBKMVh3VC9Td0ZrSkFqL29jQWRjQk9wNGw2cTEyaWNJTG80NTVwNnJzSjFuL1hqRGFOY3FkUmJBOFBTVU5EMUcrUGw5NkNsY2JpZGlZbHhsVXhBWlZFS3VrbGwybUJEUmJUQ0ZnUk1lNmMvWXlEajRSSzlFcGJyUXFvc0w1M25TS08rNGVxRHplc3NoMFhMS1pXKzBVSVh3TFZuem5rYWdLZ3dJZkRBc1JTcGJ2TnNxbmt6blE1eC9HY2E1eXpyMWZyckJSVGEwL25XSExWYiIsIml2IjoiTThZb0U1S2k3QmZPbzRHRyIsInRhZyI6ImJXTkJHZHc3R285VHVaSEx6VjJoNVE9PSIsImN0Ijoid3FiK0JXanpGLytXOENyMmZCTzd3UlpaT1dYWlJZR1A3Ry8reHpWb1U0TXJiQT09In0="
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "Medicine Cabinet - Dev",
+    "version": "1.6.0",
+    "api_name": "drug_search_dev",
+    "description": "Search for medications, pharmacies, or providers, and add them to a contact's profile for enrollment quotes",
+    "release_branches": ["main"],
+    "release_environments": ["dev"],
+    "entry": "src/",
+    "engine": "1.0.0",
+    "release_notes_directory": "releaseNotes/",
+    "config_template": {},
+    "services": [
+      {
+        "service_name": "zipcodes_api",
+        "display_name": "Zip Codes API",
+        "required_entitlement": "",
+        "auth_level": "global",
+        "auth_type": "basic_auth_token_provided",
+        "base_service_url": "https://api.zip-codes.com/v2/",
+        "auth_credentials": {
+          "token-field-name": "x-api-key",
+          "token": {
+            "encrypted": true,
+            "value": "eyJ2IjoxLCJhbGciOiJSU0EtT0FFUC0yNTYrQTI1NkdDTSIsImsiOiJqL0d3SmljZkVMdUxKc2xPQldUdTBGQmd3bjZjMFB4SWNwaXUwblZVbTBETXFGZElZOHBCcHRzVGNzY1YxWjZtS2s0clNkSXUxL29GUFhkM0VMdTlWeHRIYXZkZGppNFRWTk11ZHc3N3M3eHFTMCtMTk1tVkV2KzhvSFpHN2s3WTR4V3M2Vm9reHZwWUNrd3dIWGNnL3ZnbkZ2RHpnWi9tSzQyZ0s1WFVlb2xrRzdJczNRbE1va1B4SHluMnJ2bWU2Sk9mdG1MM3BEOFFaOUJmWSsrRHl0UmZsRVp3ak9ZOVQ1aW54Y1F6MnY1a3RETXQyeHpnTUJ4ZlJqMGY1akhIeXNENlRxOU9YMTcyUnI2aUxZcDc2V0UwZUpWSG5HS3FMeXd0eVZrSDkrWG9aYWFWSnBKMVh3VC9Td0ZrSkFqL29jQWRjQk9wNGw2cTEyaWNJTG80NTVwNnJzSjFuL1hqRGFOY3FkUmJBOFBTVU5EMUcrUGw5NkNsY2JpZGlZbHhsVXhBWlZFS3VrbGwybUJEUmJUQ0ZnUk1lNmMvWXlEajRSSzlFcGJyUXFvc0w1M25TS08rNGVxRHplc3NoMFhMS1pXKzBVSVh3TFZuem5rYWdLZ3dJZkRBc1JTcGJ2TnNxbmt6blE1eC9HY2E1eXpyMWZyckJSVGEwL25XSExWYiIsIml2IjoiTThZb0U1S2k3QmZPbzRHRyIsInRhZyI6ImJXTkJHZHc3R285VHVaSEx6VjJoNVE9PSIsImN0Ijoid3FiK0JXanpGLytXOENyMmZCTzd3UlpaT1dYWlJZR1A3Ry8reHpWb1U0TXJiQT09In0="
+          }
+        }
+      }
+    ],
+    "published": false
+  }
+]

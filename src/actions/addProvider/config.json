@@ -1,0 +1,5 @@
+{
+  "name": "Add Provider",
+  "api_name": "add_provider",
+  "hint_object_name": "providers_provider, client_client"
+}

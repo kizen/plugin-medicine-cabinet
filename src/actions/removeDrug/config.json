@@ -1,0 +1,5 @@
+{
+  "name": "Remove Drug",
+  "api_name": "remove_drug",
+  "hint_object_name": "medications_medication, client_client"
+}

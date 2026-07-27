@@ -1,0 +1,152 @@
+{
+  "name": "Lookup Pharmacy",
+  "plugin_description": "Integrates with NLM NPI Registry to retrieve pharmacy candidates for a single pharmacy",
+  "action_description": "Search the NLM NPI Registry for a single pharmacy by name and location hints. Returns individual fields if exactly one match is found, or a formatted list string if multiple matches are found.",
+  "runtime": "python-3-13",
+  "action_type": "create_event",
+  "script": "script.py",
+  "inputs": [
+    {
+      "name": "pharmacy_name",
+      "data_type": "string",
+      "label": "Pharmacy Name",
+      "description": "Name of the pharmacy to search for",
+      "required": true
+    },
+    {
+      "name": "alternative_names",
+      "data_type": "string",
+      "label": "Alternative Names",
+      "description": "Comma-separated alternative names to search for (optional)",
+      "required": false
+    },
+    {
+      "name": "pharmacy_type",
+      "data_type": "string",
+      "label": "Pharmacy Type",
+      "description": "'retail' or 'digital' to filter by taxonomy code; leave blank to search all types",
+      "required": false
+    },
+    {
+      "name": "zip",
+      "data_type": "string",
+      "label": "Zip",
+      "description": "Zip code of the pharmacy's location",
+      "required": false
+    },
+    {
+      "name": "state",
+      "data_type": "string",
+      "label": "State",
+      "description": "State of the pharmacy's location (used when zip is not provided)",
+      "required": false
+    },
+    {
+      "name": "city",
+      "data_type": "string",
+      "label": "City",
+      "description": "City of the pharmacy's location (used with state when zip is not provided)",
+      "required": false
+    },
+    {
+      "name": "streets",
+      "data_type": "string",
+      "label": "Streets",
+      "description": "Street address hints to narrow results",
+      "required": false
+    },
+    {
+      "name": "street_number",
+      "data_type": "string",
+      "label": "Street Number",
+      "description": "Street number to further narrow results when multiple candidates have the same street name",
+      "required": false
+    },
+    {
+      "name": "search_strategy",
+      "data_type": "string",
+      "label": "Search Strategy",
+      "description": "'radius' to expand search to nearest 100 zip codes, 'targeted' to use the exact location (city/state or zip) without expansion.",
+      "required": false
+    }
+  ],
+  "outputs": [
+    {
+      "name": "match_status",
+      "data_type": "string",
+      "label": "Match Status",
+      "description": "Result of the lookup: 'Match' if exactly 1 candidate found, 'No Match' if 0 candidates found, or 'Ambiguous' if multiple candidates found",
+      "required": false
+    },
+    {
+      "name": "pharmacy_npi",
+      "data_type": "string",
+      "label": "NPI",
+      "description": "NPI of the matched pharmacy if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "pharmacy_name",
+      "data_type": "string",
+      "label": "Pharmacy Name",
+      "description": "Name of the matched pharmacy if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "pharmacy_street",
+      "data_type": "string",
+      "label": "Street",
+      "description": "Street address of the matched pharmacy if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "pharmacy_city",
+      "data_type": "string",
+      "label": "City",
+      "description": "City of the matched pharmacy if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "pharmacy_state",
+      "data_type": "string",
+      "label": "State",
+      "description": "State of the matched pharmacy if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "pharmacy_zipcode",
+      "data_type": "string",
+      "label": "Zipcode",
+      "description": "Zipcode of the matched pharmacy if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "pharmacy_phone",
+      "data_type": "string",
+      "label": "Phone",
+      "description": "Phone number of the matched pharmacy if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "failure_message",
+      "data_type": "string",
+      "label": "Failure Message",
+      "description": "Human-readable explanation of why the match failed, ready for display",
+      "required": false
+    },
+    {
+      "name": "candidate_matches",
+      "data_type": "string",
+      "label": "Candidate Matches",
+      "description": "JSON array of display strings when match_status is 'Ambiguous', formatted as 'Name — Street, City, State Zip'",
+      "required": false
+    },
+    {
+      "name": "candidate_count",
+      "data_type": "number",
+      "label": "Candidate Count",
+      "description": "Number of pharmacy candidates found",
+      "required": false
+    }
+  ]
+}

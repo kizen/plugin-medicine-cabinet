@@ -1,0 +1,26 @@
+{
+  "name": "Validate Drug Extraction",
+  "plugin_description": "Validates the structure and types of a medication extraction JSON array",
+  "action_description": "Validates each medication entry in an extracted medications JSON string for required fields, types, and enum values",
+  "runtime": "python-3-13",
+  "action_type": "create_event",
+  "script": "script.py",
+  "inputs": [
+    {
+      "name": "extracted_medications_json",
+      "data_type": "string",
+      "label": "Extracted Medications JSON",
+      "description": "JSON array string of medication objects to validate, each with status, name, form, dosage, etc.",
+      "required": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "invalid_json",
+      "data_type": "boolean",
+      "label": "Invalid JSON",
+      "description": "True if the input failed validation, false if it passed",
+      "required": false
+    }
+  ]
+}

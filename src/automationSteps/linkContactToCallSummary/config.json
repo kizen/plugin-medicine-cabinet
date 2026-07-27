@@ -1,0 +1,33 @@
+{
+  "name": "Link Contact to Call Summary",
+  "plugin_description": "Reads the related contacts from the phone call record and associates the single contact to the call summary record",
+  "action_description": "Fetches the phone call record, asserts exactly one contact is linked, then patches the call summary record (<call_name> Summary) to set its primary_contact_record field",
+  "runtime": "python-3-13",
+  "action_type": "create_event",
+  "script": "script.py",
+  "inputs": [
+    {
+      "name": "call_summary_id",
+      "data_type": "string",
+      "label": "Call Summary ID",
+      "description": "UUID of the call summary record to patch with the contact association.",
+      "required": true
+    },
+    {
+      "name": "call_name",
+      "data_type": "string",
+      "label": "Phone Call Name",
+      "description": "Name of the phone call record to look up and link its related contact to the call summary.",
+      "required": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "contact_id",
+      "data_type": "string",
+      "label": "Contact ID",
+      "description": "UUID of the contact that was linked to the call summary",
+      "required": false
+    }
+  ]
+}
