@@ -172,4 +172,4 @@ extraction_summary = {
 outputs.medication_user_summary = medication_user_summary  # noqa: F821
 outputs.pharmacy_user_summary = pharmacy_user_summary  # noqa: F821
 outputs.provider_user_summary = provider_user_summary  # noqa: F821
-outputs.extraction_summary = extraction_summary  # noqa: F821
+outputs.extraction_summary = json.dumps(extraction_summary)  # noqa: F821
