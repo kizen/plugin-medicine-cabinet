@@ -38,12 +38,21 @@ def _fetch_related(object_name, call_summary_id):
 
 def _format_record_fields(rec):
     fields = rec.get("fields", {})
+    raw_candidates = next(
+        (f.get("value") for f in fields.values() if f.get("name") == "candidate_matches"),
+        None,
+    )
+    try:
+        candidate_matches = json.loads(raw_candidates) if raw_candidates else []
+    except (TypeError, json.JSONDecodeError):
+        candidate_matches = []
+
     return {
         "id": rec.get("id"),
         "name": next((f.get("value") for f in fields.values() if f.get("name") == "name"), None),
         "match_status": next((f.get("value", {}).get("name") for f in fields.values() if f.get("name") == "match_status"), None),
         "failure_message": next((f.get("value") for f in fields.values() if f.get("name") == "failure_message"), None),
-        "candidate_matches": json.loads(next((f.get("value") for f in fields.values() if f.get("name") == "candidate_matches"), "[]")),
+        "candidate_matches": candidate_matches,
         "extraction_notes": next((f.get("value") for f in fields.values() if f.get("name") == "extraction_notes"), None),
         "refill_extraction_notes": next((f.get("value") for f in fields.values() if f.get("name") == "refill_extraction_notes"), None),
     }
