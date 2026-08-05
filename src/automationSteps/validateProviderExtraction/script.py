@@ -165,10 +165,15 @@ def validate(providers):
     }
 
 
-result = validate(json.loads(inputs.provider_extraction_json))
-if not result['ok']:
+try:
+    providers = json.loads(inputs.provider_extraction_json)
+except json.JSONDecodeError as e:
     outputs.invalid_json = True
-    outputs.log(f"Error: {result['errors']}")
-
-if result['warnings']:
-    outputs.log(f"Parsed with warnings: {result['warnings']}")
+    outputs.log(f"Error: invalid JSON: {e}")
+else:
+    result = validate(providers)
+    outputs.invalid_json = not result["ok"]
+    if not result["ok"]:
+        outputs.log(f"Error: {result['errors']}")
+    if result["warnings"]:
+        outputs.log(f"Parsed with warnings: {result['warnings']}")
