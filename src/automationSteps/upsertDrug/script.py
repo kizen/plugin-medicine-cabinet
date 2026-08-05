@@ -17,9 +17,9 @@ if not freq:
     raise ValueError("freq is required")
 
 # Medication name format mirrors addDrug: "{ndc}-{qty_str}-{freq}"
-qty_str = f"{int(float(qty))}.0"
+qty_num = float(qty)
+qty_str = f"{int(qty_num)}.0" if qty_num.is_integer() else str(qty_num)
 medication_name = f"{ndc}-{qty_str}-{freq}"
-
 # ============== UPSERT MEDICATION ==============
 
 fields = [
