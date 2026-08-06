@@ -1,6 +1,6 @@
 {
   "name": "Validate Drug Quantity",
-  "plugin_description": "Validates the medication frequency/quantity/cost JSON output from extraction",
+  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
   "action_description": "Validates the structure, types, and enum values of a refill extraction JSON string",
   "runtime": "python-3-13",
   "action_type": "create_event",
@@ -33,7 +33,7 @@
       "name": "frequency",
       "data_type": "number",
       "label": "Frequency (Days)",
-      "description": "Extracted frequency in days — one of 30, 60, 90, 180, 360 (only set when validation passes)",
+      "description": "Extracted frequency in days - one of 30, 60, 90, 180, 360 (only set when validation passes)",
       "required": false
     },
     {

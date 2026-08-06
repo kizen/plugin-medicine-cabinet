@@ -1,6 +1,6 @@
 {
   "name": "Upsert Drug",
-  "plugin_description": "Creates or updates a medication record in Kizen and optionally links it to a drug reference record.",
+  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
   "action_description": "Upserts a medication record in the Medications object using the NDC, quantity, and frequency as the lookup key. Optionally links the resulting medication record to the given drug reference record.",
   "runtime": "python-3-13",
   "action_type": "create_event",

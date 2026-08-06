@@ -1,6 +1,6 @@
 {
   "name": "Validate Drug Extraction",
-  "plugin_description": "Validates the structure and types of a medication extraction JSON array",
+  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
   "action_description": "Validates each medication entry in an extracted medications JSON string for required fields, types, and enum values",
   "runtime": "python-3-13",
   "action_type": "create_event",

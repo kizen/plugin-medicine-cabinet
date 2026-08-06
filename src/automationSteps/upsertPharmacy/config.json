@@ -1,6 +1,6 @@
 {
   "name": "Upsert Pharmacy",
-  "plugin_description": "Creates or updates a pharmacy record in Kizen and links it to a pharmacy reference record.",
+  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
   "action_description": "Upserts a pharmacy record in the Pharmacies object using the provided NPI as the lookup key. Links the resulting pharmacy record to the given pharmacy reference record.",
   "runtime": "python-3-13",
   "action_type": "create_event",

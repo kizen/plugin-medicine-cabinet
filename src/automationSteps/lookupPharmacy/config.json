@@ -1,6 +1,6 @@
 {
   "name": "Lookup Pharmacy",
-  "plugin_description": "Integrates with NLM NPI Registry to retrieve pharmacy candidates for a single pharmacy",
+  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
   "action_description": "Search the NLM NPI Registry for a single pharmacy by name and location hints. Returns individual fields if exactly one match is found, or a formatted list string if multiple matches are found.",
   "runtime": "python-3-13",
   "action_type": "create_event",
@@ -138,7 +138,7 @@
       "name": "candidate_matches",
       "data_type": "string",
       "label": "Candidate Matches",
-      "description": "JSON array of display strings when match_status is 'Ambiguous', formatted as 'Name — Street, City, State Zip'",
+      "description": "JSON array of display strings when match_status is 'Ambiguous', formatted as 'Name \u2014 Street, City, State Zip'",
       "required": false
     },
     {

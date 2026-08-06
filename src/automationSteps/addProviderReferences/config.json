@@ -1,6 +1,6 @@
 {
   "name": "Add Provider References",
-  "plugin_description": "Creates provider reference records in Kizen from a validated provider extraction, linked to a phone call and contact",
+  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
   "action_description": "Creates one provider_references record per provider entry in the extracted providers JSON, linked to the given phone call and contact",
   "runtime": "python-3-13",
   "action_type": "create_event",
