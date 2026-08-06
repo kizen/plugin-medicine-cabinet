@@ -312,7 +312,7 @@ def _fmt_provider(p):
     loc = f"{p['city']}, {p['state']}".strip(", ")
     if loc:
         parts.append(loc)
-    return " — ".join(parts)
+    return " - ".join(parts)
 
 if len(candidates) == 0:
     outputs.log("No matches found")  # noqa: F821
