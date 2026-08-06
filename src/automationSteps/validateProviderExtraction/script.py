@@ -45,6 +45,13 @@ def _warn(warnings, path, msg):
     warnings.append(f"[WARN]  {path}: {msg}")
 
 
+def _preview_messages(messages, limit=5):
+    if len(messages) <= limit:
+        return messages
+    remaining = len(messages) - limit
+    return messages[:limit] + [f"... and {remaining} more"]
+
+
 def _validate_provider(obj, path, errors, warnings):
     if not isinstance(obj, dict):
         _err(errors, path, f"must be an object, got {type(obj).__name__}")
@@ -169,11 +176,19 @@ try:
     providers = json.loads(inputs.provider_extraction_json)
 except json.JSONDecodeError as e:
     outputs.invalid_json = True
-    outputs.log(f"Error: invalid JSON: {e}")
+    outputs.log(f"Provider extraction validation failed: invalid JSON ({e})")
 else:
     result = validate(providers)
     outputs.invalid_json = not result["ok"]
+
     if not result["ok"]:
-        outputs.log(f"Error: {result['errors']}")
+        preview = _preview_messages(result["errors"])
+        outputs.log(
+            f"Provider extraction validation failed with {len(result['errors'])} error(s): {preview}"
+        )
+
     if result["warnings"]:
-        outputs.log(f"Parsed with warnings: {result['warnings']}")
+        preview = _preview_messages(result["warnings"])
+        outputs.log(
+            f"Provider extraction validation passed with {len(result['warnings'])} warning(s): {preview}"
+        )
