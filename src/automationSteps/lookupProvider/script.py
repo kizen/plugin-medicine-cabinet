@@ -191,16 +191,17 @@ def query_nlm_names(
         if total_zips else "zips=0"
     )
     outputs.log(  # noqa: F821
-        f"NLM query: lasts={last_variants} firsts={first_variants} "
-        f"specialties={specialty_terms} state='{state}' city='{city}' "
-        f"{zip_summary}"
+        f"NLM query: last_variants={len(last_variants or [])} "
+        f"first_variants={len(first_variants or [])} "
+        f"specialties={len(specialty_terms or [])} "
+        f"has_state={bool(state)} has_city={bool(city)} {zip_summary}"
     )
     try:
         resp = requests.get(url, timeout=10)
         resp.raise_for_status()
         return parse_nlm_response(resp.json())
     except Exception as e:
-        outputs.log(f"ERROR: NLM query failed: {e}")  # noqa: F821
+        outputs.log(f"ERROR: NLM query failed ({type(e).__name__})")  # noqa: F821
         return []
 
 
@@ -222,7 +223,7 @@ def get_nearby_zips(zip_code: str) -> list:
             if m.get("code") and m.get("code_type") == "ZIP"
         ]
     except Exception as e:
-        outputs.log(f"ERROR: Failed to fetch nearby zips for {zip_code}: {e}")  # noqa: F821
+        outputs.log(f"ERROR: Failed to fetch nearby zips ({type(e).__name__})")  # noqa: F821
         return []
 
 
@@ -249,9 +250,9 @@ all_lasts = ([last_name] if last_name else []) + alt_lasts
 all_firsts = ([first_name] if first_name else []) + alt_firsts
 
 outputs.log(  # noqa: F821
-    f"Lookup: first={first_name!r} last={last_name!r} "
-    f"zip={zip_code!r} state={state!r} city={city!r} "
-    f"streets={streets!r} strategy={search_strategy!r}"
+    f"Lookup: has_first={bool(first_name)} has_last={bool(last_name)} "
+    f"has_zip={bool(zip_code)} has_state={bool(state)} has_city={bool(city)} "
+    f"street_hints={len(streets)} strategy={search_strategy!r}"
 )
 
 zip_codes = None
@@ -263,7 +264,7 @@ if zip_code:
             state = ""
             city = ""
         else:
-            outputs.log(f"No nearby zips found for {zip_code}, falling back to exact zip")  # noqa: F821
+            outputs.log("No nearby zips found, falling back to exact zip")  # noqa: F821
             zip_codes = [(zip_code, None)]
     else:
         zip_codes = [(zip_code, None)]
@@ -281,21 +282,21 @@ candidates = query_nlm_names(
 # When radius returned multiple candidates, try filtering to exact zip for a unique match
 if len(candidates) > 1 and search_strategy == "radius" and zip_code:
     exact_zip_matches = [c for c in candidates if c["zipcode"] == zip_code]
-    outputs.log(f"Radius returned {len(candidates)} candidates; {len(exact_zip_matches)} in exact zip {zip_code}")  # noqa: F821
+    outputs.log(f"Radius returned {len(candidates)} candidates; {len(exact_zip_matches)} in exact zip")  # noqa: F821
     if len(exact_zip_matches) > 0:
         candidates = exact_zip_matches
 
 # When still multiple candidates, try filtering by street name hints
 if len(candidates) > 1 and streets:
     street_matches = [c for c in candidates if any(hint in clean_street_name(c["street"]) for hint in streets)]
-    outputs.log(f"Street name filter {streets}: {len(street_matches)} of {len(candidates)} candidates match")  # noqa: F821
+    outputs.log(f"Street name filter applied: {len(street_matches)} of {len(candidates)} candidates match")  # noqa: F821
     if len(street_matches) > 0:
         candidates = street_matches
 
 # When still multiple candidates, try filtering by street number as a final disambiguator
 if len(candidates) > 1 and street_number:
     number_matches = [c for c in candidates if c["street"].split()[0] == street_number]
-    outputs.log(f"Street number filter '{street_number}': {len(number_matches)} of {len(candidates)} candidates match")  # noqa: F821
+    outputs.log(f"Street number filter applied: {len(number_matches)} of {len(candidates)} candidates match")  # noqa: F821
     if len(number_matches) > 0:
         candidates = number_matches
 
