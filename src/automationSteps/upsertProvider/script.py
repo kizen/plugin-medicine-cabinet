@@ -23,10 +23,13 @@ fields = [
     {"name": "address_fe1155", "value": street},
     {"name": "city", "value": city},
     {"name": "zip", "value": zipcode},
-    {"name": "state", "value": {"name": state}},
-    {"name": "related_provider_reference_records", "add_values": [{"name": ref_name}]},
-    {"name": "related_call_summary_records", "add_values": [{"name": call_summary_name}]}
 ]
+if state:
+    fields.append({"name": "state", "value": {"name": state}})
+if ref_name:
+    fields.append({"name": "related_provider_reference_records", "add_values": [{"name": ref_name}]})
+if call_summary_name:
+    fields.append({"name": "related_call_summary_records", "add_values": [{"name": call_summary_name}]})
 
 resp = kizen.api.post(
     f"/records/{PROVIDER_OBJECT_API_NAME}/upsert",
