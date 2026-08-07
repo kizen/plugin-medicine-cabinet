@@ -2,13 +2,13 @@
 
 A [Kizen](https://kizen.com) CRM plugin that lets agents search the [FDA NDC database](https://open.fda.gov/apis/drug/ndc/) for medications, pharmacies, and providers, and attach them to a contact's record for enrollment quotes.
 
-## Architecture
+## What it does
 
 - **Drug Search** — a multi-step form (`dynamicPrompt`) that narrows an FDA NDC search from brand name → dosage form → dosage strength → packaging → quantity/frequency, then creates or reuses a medication record and links it to the contact's `drugs` field.
 - **Add/Remove Pharmacy** and **Add/Remove Provider** — similar record-search-and-link actions for pharmacies and providers.
 - A parallel set of automation steps (used in no-code automations rather than manual actions) that look up, validate, and upsert drug/pharmacy/provider references from call summaries, and link the results back to a contact.
 
-### API Integration
+### Drug Search: API Integration
 
 **Base URL**: `https://api.fda.gov/drug/ndc.json` ([API Documentation](https://open.fda.gov/apis/drug/ndc/))
 
@@ -28,13 +28,13 @@ The form progressively narrows down NDC options at each step. After the initial 
 
    - **API Call**: Initial search with brand name wildcard matching
    - Returns aggregated clean names mapped to original brand name arrays
-   - Implements intelligent sorting (query matches first, then by length)
+   - Sorted by: matches starting with the query first, then by length, then alphabetically
 
 2. **Dosage Form** (`dosage_form`)
 
    - **API Call**: Secondary call with exact brand name matches to get complete dataset
    - **NDC Tracking**: Maintains array of all matching drug records for selected brand(s)
-   - Prioritizes tablets, sorts by length
+   - Sorted by: TABLET forms first, then by length, then alphabetically
    - Condition: `Boolean({{brand_name}}?.value)`
 
 3. **Dosage Strength** (`dosage_strength`)
@@ -45,36 +45,31 @@ The form progressively narrows down NDC options at each step. After the initial 
    - Condition: Enabled except for KIT products
    - Limit: 30 results max
 
-4. **Packaging** (`packaging`) - **Conditional Step**
+4. **Packaging** (`packaging`)
 
    - **NDC Tracking**: Processes packaging arrays from previous step's NDC records
-   - **Early Termination Logic**:
-     - **Skipped for**: TABLET, CAPSULE (packaging irrelevant)
-     - **Required for**: Injections, solutions, inhalers, KITs (packaging size/format matters)
-   - **Why it matters**: Bottle sizes for solutions, syringe counts for injections, inhaler doses
+   - Skipped when the dosage form is TABLET or CAPSULE; shown otherwise (including for KIT forms)
    - Strips NDC codes from descriptions, filters out sample products
    - Condition: `(dosage_strength exists AND form ≠ TABLET/CAPSULE) OR form = KIT`
 
 5. **Quantity/Frequency**
-   - Always required when previous steps complete
-   - No NDC filtering - just metadata for final drug record
+   - Shown when `dosage_strength` has a value or the dosage form is KIT
+   - Frequency options are fixed values in the form: Monthly (30), Every 2 Months (60), Quarterly (90), Every 6 Months (180), Yearly (360)
+   - No NDC filtering — just metadata for the final drug record
 
 ### Final NDC Selection
 
-At the end of the workflow, the system selects a single packaging NDC from the remaining options. Bias towards steps later in the flow.
-
 ```javascript
-// NDC selection hierarchy (first available):
 const selectedPkgNDCs =
-  result.values.packaging?.value || // From packaging step
-  extractAndFlattenPackaging(result.values.dosage_strength?.value) || // From strength step
-  extractAndFlattenPackaging(result.values.dosage_form?.value) || // From form step
+  result.values.packaging?.value ||
+  extractAndFlattenPackaging(result.values.dosage_strength?.value) ||
+  extractAndFlattenPackaging(result.values.dosage_form?.value) ||
   [];
 
-const finalPkg = getMinNdcByStartDate(selectedPkgNDCs); // Oldest marketing_start_date
+const finalPkg = getMinNdcByStartDate(selectedPkgNDCs);
 ```
 
-**Selection Logic**: Takes the packaging NDC with the **oldest** `marketing_start_date` to ensure consistent selection of established products over newer formulations.
+**Selection Logic**: Takes whichever step's NDC list is available, in priority order (packaging → dosage_strength → dosage_form), and picks the entry with the earliest `marketing_start_date`.
 
 ## Structure
 
@@ -100,79 +95,43 @@ releaseNotes/                       Per-version release notes shown in the Kizen
 
 ### Data Processing Functions
 
-#### NDC Normalization
-
-```javascript
-function normalizeNdc(ndc) {
-  // Converts variable format NDCs (####-###-##) to 11-digit format
-  // Pads each segment: 5-4-2 digits
-}
-```
-
-
-#### Package Selection Logic
-
-```javascript
-function getMinNdcByStartDate(packaging) {
-  // Selects package with earliest marketing_start_date
-  // Used for final NDC determination
-}
-```
-
-
-#### Name Cleaning Algorithm
-
-- Generic drugs: Uses active ingredient names when brand name contains generic name
-- Brand drugs: Uses brand name directly
-- Fallback: Active ingredients or generic name for KITs
+- **NDC Normalization** (`normalizeNdc`): converts a 3-segment NDC (`#####-####-##`) into an 11-digit string by zero-padding each segment to 5-4-2 digits.
+- **Package Selection** (`getMinNdcByStartDate`): returns the packaging entry with the earliest `marketing_start_date` from a list.
+- **Name Cleaning** (`cleanBrandName`):
+  - If the generic name is contained in the brand name, uses the active ingredient names instead (capitalized)
+  - Otherwise uses the brand name directly
+  - Falls back to active ingredients, or the generic name if ingredients are blank (the code notes this happens for some KITs)
 
 ### Database Operations
 
-#### Medication Record Management
-
-- **Search**: `/records/medications_medication/search?search=${drugName}`
-- **Create**: `/records/medications_medication/add` (only if not exists)
+- **Lookup**: `GET /records/medications_medication/lookup?identifier=${drugName}` — checks for an existing medication record before creating one
+- **Create**: `POST /records/medications_medication/add` (only if no existing record was found)
 - **Drug Name Format**: `${ndc}-${quantity}-${frequency}`
-
-#### Contact Association
-
-- **Update**: `/records/client_client/${contact.id}`
-- **Field**: `drugs` (array of drug name references)
-- **Behavior**: Appends to existing drugs, prevents duplicates
+- **Link to contact**: `PATCH /records/${object_id}/${entity_id}`, adding the medication record's id to the `drugs` field via `add_values`. `object_id`/`entity_id` come from the current object/entity the action runs on (typically the contact), not a hardcoded object.
+- The medication record itself is reused rather than duplicated when one with the same name already exists; there's no separate check for whether the contact is already linked to that medication.
 
 ### Error Handling
 
-- Form validation through required fields and conditional logic
-- API error handling implicit through result checking
-- Toast notification for incomplete selections: `"Selection incomplete"`
-- Graceful fallbacks for missing data (empty strings, null checks)
+- Required fields and `when` conditions gate which steps can be completed
+- Each CRM record call (`getWithErrors`, `postWithErrors`, `patchWithErrors`) checks its returned error explicitly and shows a failure toast
+- If frequency or quantity is missing, shows: `"Selection incomplete. Please fill all required fields."`
+- Frequency and quantity are validated as positive integers before use
 
-### Development Notes
+### Performance
 
-#### Debugging
+- Only two FDA API calls happen for the whole flow: an initial brand-name search, then one full-detail call for the selected brand name(s)
+- Dosage strength and packaging filtering happen client-side against already-fetched data — no further API calls
+- The brand name field is a typeahead, so the initial search waits for user input
+- Result limits: 100 per FDA API call, 30 for the dosage strength list
 
-- Extensive `console.log` statements for each step's results
-- JSON.stringify with formatting for complex objects
-- State logging shows full selection context
+## Configuration
 
-#### Performance Considerations
+- The FDA NDC API (`https://api.fda.gov/drug/ndc.json`) requires no authentication.
+- The `lookupPharmacy` and `lookupProvider` automation steps use the Zip Codes API for radius search, called through the platform proxy at `/external-integrations/proxy/drug_search/zipcodes_api`. The API key for this service is stored encrypted under `services` in `kizen.json`, decryptable only by the Kizen platform.
+- `developer_business_id` in `kizen.json` maps environments (e.g. `staging`) to business ids for developer/testing publishes.
 
-- Two-stage API calls optimize performance while ensuring complete data retrieval
-  - First call returns partial results for brand name selection to avoid over-fetching
-  - Second call fetches ALL drug records for selected brand names (not limited by initial search constraints)
-- Client-side processing for dosage/packaging reduces API calls
-- Typeahead delays API calls until user input
-- Result limits (100 for API, 30 for dosage strength)
-
-
-#### Customization Points
-
-- `registerUtils` provides reusable functions (`getBaseUrl`, `capitalizeWords`)
-- Sorting algorithms can be modified for different prioritization
-- Frequency options are hardcoded but easily configurable
-- API limits and search parameters are adjustable
-
-### Dependencies
+## Requirements
 
 - Contact record must have the `drugs` field configured as an array type (and equivalent fields for pharmacies/providers).
-- Requires the CRM framework's `dynamicPrompt`, `currentEntity`, `post`, and `patch` methods for the JS actions.
+- JS actions (`src/actions/`) use the CRM framework's `dynamicPrompt`, `currentObject`, `currentEntity`, `actionEntity` (used by the remove actions), `getWithErrors`/`postWithErrors`/`patchWithErrors`, `showToast`, `clearToasts`, and `refreshEntity` methods.
+- Python automation steps (`src/automationSteps/`) use the `kizen.api.get`/`post`/`patch` client and an `inputs`/`outputs` contract rather than function parameters and return values.

@@ -7,7 +7,7 @@ NLM_BASE_URL = "https://clinicaltables.nlm.nih.gov/api/npi_org/v3/search"
 NLM_EXTRA_FIELDS = "NPI,name,addr_practice,misc.last_update_date"
 NLM_MAX_RESULTS = 200
 
-ZIPCODES_PROXY_URL = "/external-integrations/proxy/drug_search_dev/zipcodes_api"
+ZIPCODES_PROXY_URL = "/external-integrations/proxy/drug_search/zipcodes_api"
 
 RETAIL_TAXONOMY = "(3336C0003X+OR+3336C0002X+OR+3336I0012X)"
 DIGITAL_TAXONOMY = "(3336M0002X+OR+3336S0011X+OR+3336H0001X)"

@@ -3,7 +3,7 @@ import re
 import requests
 import urllib.parse
 
-ZIPCODES_BASE_URL = "/external-integrations/proxy/drug_search_dev/zipcodes_api"
+ZIPCODES_BASE_URL = "/external-integrations/proxy/drug_search/zipcodes_api"
 NLM_BASE_URL = "https://clinicaltables.nlm.nih.gov/api/npi_idv/v3/search"
 NLM_EXTRA_FIELDS = (
     "NPI,name.first,name.last,name.middle,name.credential,"
