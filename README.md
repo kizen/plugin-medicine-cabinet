@@ -132,6 +132,28 @@ releaseNotes/                       Per-version release notes shown in the Kizen
 
 ## Requirements
 
-- Contact record must have the `drugs` field configured as an array type (and equivalent fields for pharmacies/providers).
-- JS actions (`src/actions/`) use the CRM framework's `dynamicPrompt`, `currentObject`, `currentEntity`, `actionEntity` (used by the remove actions), `getWithErrors`/`postWithErrors`/`patchWithErrors`, `showToast`, `clearToasts`, and `refreshEntity` methods.
-- Python automation steps (`src/automationSteps/`) use the `kizen.api.get`/`post`/`patch` client and an `inputs`/`outputs` contract rather than function parameters and return values.
+The plugin's objects and fields are referenced by exact API name throughout the code, so the CRM instance must have the following in place:
+
+| Object | Required fields |
+|---|---|
+| `client_client` (Contact) | `drugs`, `pharmacies`, `providers` (relationship fields, updated via `add_values`) |
+| `medications_medication` | `name`, `ndc`, `label_name`, `qty`, `freq`, `related_drug_reference_records`, `related_call_summary_records` |
+| `pharmacies_pharmacy` | `name`, `npi`, `pharmacy_name`, `type` (options: `Retail`, `Mail`), `address_street`, `address_street_2`, `address_city`, `address_state`, `address_zip`, `phone`, `related_pharmacy_reference_records`, `related_call_summary_records` |
+| `providers_provider` | `name`, `npi_ce9d20`, `text_1`, `address_fe1155`, `city`, `state` (select field with two-letter state abbreviations as options), `zip`, `related_provider_reference_records`, `related_call_summary_records` |
+| `drug_references` | `name`, `transcript_name`, `brand_name`, `generic_name`, `is_current` (options: `Yes`, `No`), `search_form`, `search_dosage`, `transcript_excerpt`, `extraction_notes`, `primary_call_summary_record`, `match_status` (must include option `Processing`), `raw_model_output`, `refill_extraction_notes`, `failure_message`, `candidate_matches` |
+| `pharmacy_references` | `name`, `transcript_name`, `search_name_variants`, `raw_model_output`, `primary_call_summary_record`, `search_pharmacy_type` (options: `retail`, `mail_order`, `specialty`, `long_term_care`, `compounding`, `unknown`), `search_strategy` (options: `Targeted`, `Radius`), `search_zipcode`, `search_state`, `search_city`, `search_streets`, `search_street_number`, `transcript_excerpt`, `extraction_notes`, `match_status` (must include option `Processing`) |
+| `provider_references` | `name`, `transcript_name`, `primary_call_summary_record`, `is_current` (options: `Yes`, `No`), `search_first_name`, `search_last_name`, `search_first_name_variants`, `search_last_name_variants`, `search_specialty_terms`, `search_strategy` (options: `Targeted`, `Radius`), `search_zipcode`, `search_state`, `search_city`, `search_streets`, `search_street_number`, `search_gender` (options: `Female`, `Male`, `Unknown`), `transcript_excerpt`, `extraction_notes`, `raw_model_output`, `match_status` (must include option `Processing`), `search_hospital_affiliation` |
+| `health_insurance_call_summaries` | `primary_contact_record` (relationship to Contact); records are looked up by name |
+| `phone_call` | `related_contact_records` (relationship to Contact) |
+
+Additional hard-coded preconditions enforced by explicit error checks in the automation steps:
+
+- `linkContactToCallSummary` requires the `phone_call` record it's given to have **exactly one** related contact in `related_contact_records` — it raises an error if there are zero or more than one.
+- `checkRefsComplete` requires `match_status` and `primary_call_summary_record` to exist on `drug_references`, `pharmacy_references`, and `provider_references`, and requires `match_status` to have a `Processing` option — it raises an error naming the missing field/option otherwise.
+- `summarizeFailedLookups` requires a `primary_call_summary_record` field on those same three objects, and requires `health_insurance_call_summaries` records to be found by name and to have an `id` — it raises an error naming what's missing otherwise.
+- `upsertDrug`, `upsertPharmacy`, and `upsertProvider` use each object's `name` field as the upsert lookup key, and require their respective identifying input (`matched_ndc`, `matched_npi`, `matched_npi`) to be present — they raise an error if it's missing or if the upsert call doesn't return a record id.
+- `addProvider` requires `providers_provider`'s `state` field to exist and to have an option matching the two-letter state abbreviation being set, or it shows "State field not found in provider object."
+
+None of the `zipcodes_api` calls in `lookupPharmacy`/`lookupProvider` require separate entitlement setup — `kizen.json` declares `required_entitlement: ""` for that service, and the credential ships bundled (see Configuration above).
+
+JS actions (`src/actions/`) also depend on the CRM framework's `dynamicPrompt`, `currentObject`, `currentEntity`, `actionEntity` (used by the remove actions), `getWithErrors`/`postWithErrors`/`patchWithErrors`, `showToast`, `clearToasts`, and `refreshEntity` methods being available at runtime. Python automation steps (`src/automationSteps/`) depend on the `kizen.api.get`/`post`/`patch` client and an `inputs`/`outputs` contract rather than function parameters and return values.
