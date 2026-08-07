@@ -39,7 +39,7 @@ releaseNotes/                       Per-version release notes shown in the Kizen
 ## Configuration
 
 - The FDA NDC API requires no authentication.
-- The pharmacy/provider lookups use the Zip Codes API (`https://api.zip-codes.com/v2/`) for radius search; its API key is provisioned per-deployment under `services` in `kizen.json` and is not included in this repository.
+- The pharmacy/provider lookups use the Zip Codes API (`https://api.zip-codes.com/v2/`) for radius search.
 
 ## Requirements
 
