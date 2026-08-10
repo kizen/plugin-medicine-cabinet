@@ -3,10 +3,6 @@ Validator for the medication quantity output.
 
 Validates the JSON output structure, types, and enum values for the
 quantity extraction step.
-
-Usage:
-    from validate_med_frequency import validate
-    errors = validate(output_string)  # returns list of error strings; [] = valid
 """
 
 import json
