@@ -1,8 +1,10 @@
+import urllib.parse
+
 call_summary_id = str(inputs.call_summary_id)  # noqa: F821
 call_name = inputs.call_name  # noqa: F821
 
 resp = kizen.api.get(
-    f"/records/phone_call/lookup?identifier={call_name}",
+     f"/records/phone_call/lookup?identifier={urllib.parse.quote(call_name, safe='')}",
     timeout=10,
 )
 resp.raise_for_status()
