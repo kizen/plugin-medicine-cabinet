@@ -1,75 +1,34 @@
 # Medicine Cabinet
 
-A [Kizen](https://kizen.com) CRM plugin that lets agents search the [FDA NDC database](https://open.fda.gov/apis/drug/ndc/) for medications, pharmacies, and providers, and attach them to a contact's record for enrollment quotes.
+A Kizen Agent CRM plugin that lets agents search the [FDA NDC database](https://open.fda.gov/apis/drug/ndc/) for medications, the [NLM NPI Org database](https://clinicaltables.nlm.nih.gov/apidoc/npi_org/v3/doc.html) for pharmacies, and the [NLM NPI Idv database](https://clinicaltables.nlm.nih.gov/apidoc/npi_idv/v3/doc.html) for providers. After querying, the items are attached to a contact's record for enrollment quotes.
 
-## What it does
+## How it works
 
-- **Drug Search** — a multi-step form (`dynamicPrompt`) that narrows an FDA NDC search from brand name → dosage form → dosage strength → packaging → quantity/frequency, then creates or reuses a medication record and links it to the contact's `drugs` field.
-- **Add/Remove Pharmacy** and **Add/Remove Provider** — similar record-search-and-link actions for pharmacies and providers.
-- A parallel set of automation steps (used in no-code automations rather than manual actions) that look up, validate, and upsert drug/pharmacy/provider references from call summaries, and link the results back to a contact.
+The plugin has two main surfaces:
 
-### Drug Search: API Integration
+- **Actions** (`src/actions/`) — JavaScript `dynamicPrompt` forms that agents run manually on a contact record. Designed to be configured as the custom action on a related record block. At the end of each action, a record is created or reused and linked to the contact. `Remove` actions unlink the record from the contact without archiving it.
 
-**Base URL**: `https://api.fda.gov/drug/ndc.json` ([API Documentation](https://open.fda.gov/apis/drug/ndc/))
+- **Automation Steps** (`src/automationSteps/`) — Python steps for use in no-code workflows (Medicare Voice Assistant). Triggered from a call recording or transcript upload, they process drug/pharmacy/provider data extracted from a transcript without any agent interaction.
 
-The action makes multiple API calls to the FDA database:
+### Actions
 
-1. Initial search by brand name with wildcard matching
-2. Secondary call to get complete data for selected brand names
-3. All calls filter for `finished:true` and `product_type:PRESCRIPTION`
+#### Drug Search (`src/actions/drugSearch/`)
 
-### Form Steps & NDC Tracking
+The agent enters a brand name and the form progressively narrows results across up to five steps: brand name → dosage form → dosage strength → packaging → quantity/frequency. Only two FDA API calls are made: an initial brand-name search, then one full-detail fetch for the selected brand(s). Dosage strength and packaging filtering happen client-side against the already-fetched data. The final NDC is selected from whichever step produced the narrowest list, picking the entry with the earliest `marketing_start_date`.
 
-The form progressively narrows down NDC options at each step. After the initial API calls, each step maintains the current set of NDC records and may terminate early based on dosage form requirements.
+#### Pharmacy & Provider Search (`src/actions/addPharmacy/`, `src/actions/addProvider/`)
 
-![Prompt Flow](./images/prompt_flow.png)
+The agent enters a name and location (city/state or zip code). Results are fetched from the NLM NPI APIs, with optional radius-based search via the [Zip Codes API](https://www.zipcodeapi.com/) proxied through the Kizen platform. The Zip Codes API key is stored encrypted in `kizen.json` and is not accessible outside the platform.
 
-1. **Brand Name Search** (`brand_name`)
+### Automation Steps flow (`src/automationSteps/`)
 
-   - **API Call**: Initial search with brand name wildcard matching
-   - Returns aggregated clean names mapped to original brand name arrays
-   - Sorted by: matches starting with the query first, then by length, then alphabetically
+Agentic workflows don't support loops, so each item extracted from a transcript is handled by spawning a separate parallel workflow per item. The overall flow is:
 
-2. **Dosage Form** (`dosage_form`)
-
-   - **API Call**: Secondary call with exact brand name matches to get complete dataset
-   - **NDC Tracking**: Maintains array of all matching drug records for selected brand(s)
-   - Sorted by: TABLET forms first, then by length, then alphabetically
-   - Condition: `Boolean({{brand_name}}?.value)`
-
-3. **Dosage Strength** (`dosage_strength`)
-
-   - **NDC Tracking**: Filters NDC records from dosage_form step by active ingredient strength
-   - Client-side processing only - no additional API calls
-   - Parses strength values, handles multi-ingredient drugs
-   - Condition: Enabled except for KIT products
-   - Limit: 30 results max
-
-4. **Packaging** (`packaging`)
-
-   - **NDC Tracking**: Processes packaging arrays from previous step's NDC records
-   - Skipped when the dosage form is TABLET or CAPSULE; shown otherwise (including for KIT forms)
-   - Strips NDC codes from descriptions, filters out sample products
-   - Condition: `(dosage_strength exists AND form ≠ TABLET/CAPSULE) OR form = KIT`
-
-5. **Quantity/Frequency**
-   - Shown when `dosage_strength` has a value or the dosage form is KIT
-   - Frequency options are fixed values in the form: Monthly (30), Every 2 Months (60), Quarterly (90), Every 6 Months (180), Yearly (360)
-   - No NDC filtering — just metadata for the final drug record
-
-### Final NDC Selection
-
-```javascript
-const selectedPkgNDCs =
-  result.values.packaging?.value ||
-  extractAndFlattenPackaging(result.values.dosage_strength?.value) ||
-  extractAndFlattenPackaging(result.values.dosage_form?.value) ||
-  [];
-
-const finalPkg = getMinNdcByStartDate(selectedPkgNDCs);
-```
-
-**Selection Logic**: Takes whichever step's NDC list is available, in priority order (packaging → dosage_strength → dosage_form), and picks the entry with the earliest `marketing_start_date`.
+1. **Extract** — Triggered when a call transcript or recording is uploaded. Three parallel LLM agents extract drugs, providers, and pharmacies from the transcript and each return an array of structured objects.
+2. **Validate** — LLM-extracted drug/pharmacy/provider objects are validated for required fields before any lookup is attempted (`validate*Extraction`, `validateDrugQuantity`).
+3. **Create reference records** — Each validated item gets a `drug_reference`, `pharmacy_reference`, or `provider_reference` record created with `match_status: Processing`. Each reference record kicks off its own lookup workflow.
+4. **Lookup** — Searches for a matching record using normalized names to account for possible transcription errors. For pharmacies and providers, location search uses either a targeted address match or zip code radius depending on the context. The reference record's `match_status` is updated with the result, and the found/created record is linked to the reference.
+5. **Post-processing** — A `checkRefsComplete` step runs after each lookup to see if any references remaining in `Processing` status. A separate workflow checks `match_status` after 5 minutes to see if any lookups have hung and sets `match_status` to `Error` if so. Once complete, a `processing_complete` timestamp is added to the Health Summary record to trigger the next set of workflows. Failed lookups are summarized (`summarizeFailedLookups`) and confirmed matches are linked to the contact record.
 
 ## Structure
 
@@ -93,67 +52,26 @@ src/automationSteps/                Steps usable inside no-code automations (Pyt
 releaseNotes/                       Per-version release notes shown in the Kizen plugin marketplace
 ```
 
-### Data Processing Functions
-
-- **NDC Normalization** (`normalizeNdc`): converts a 3-segment NDC (`#####-####-##`) into an 11-digit string by zero-padding each segment to 5-4-2 digits.
-- **Package Selection** (`getMinNdcByStartDate`): returns the packaging entry with the earliest `marketing_start_date` from a list.
-- **Name Cleaning** (`cleanBrandName`):
-  - If the generic name is contained in the brand name, uses the active ingredient names instead (capitalized)
-  - Otherwise uses the brand name directly
-  - Falls back to active ingredients, or the generic name if ingredients are blank (the code notes this happens for some KITs)
-
-### Database Operations
-
-- **Lookup**: `GET /records/medications_medication/lookup?identifier=${drugName}` — checks for an existing medication record before creating one
-- **Create**: `POST /records/medications_medication/add` (only if no existing record was found)
-- **Drug Name Format**: `${ndc}-${quantity}-${frequency}`
-- **Link to contact**: `PATCH /records/${object_id}/${entity_id}`, adding the medication record's id to the `drugs` field via `add_values`. `object_id`/`entity_id` come from the current object/entity the action runs on (typically the contact), not a hardcoded object.
-- The medication record itself is reused rather than duplicated when one with the same name already exists; there's no separate check for whether the contact is already linked to that medication.
-
-### Error Handling
-
-- Required fields and `when` conditions gate which steps can be completed
-- Each CRM record call (`getWithErrors`, `postWithErrors`, `patchWithErrors`) checks its returned error explicitly and shows a failure toast
-- If frequency or quantity is missing, shows: `"Selection incomplete. Please fill all required fields."`
-- Frequency and quantity are validated as positive integers before use
-
-### Performance
-
-- Only two FDA API calls happen for the whole flow: an initial brand-name search, then one full-detail call for the selected brand name(s)
-- Dosage strength and packaging filtering happen client-side against already-fetched data — no further API calls
-- The brand name field is a typeahead, so the initial search waits for user input
-- Result limits: 100 per FDA API call, 30 for the dosage strength list
-
 ## Configuration
 
-- The FDA NDC API (`https://api.fda.gov/drug/ndc.json`) requires no authentication.
-- The `lookupPharmacy` and `lookupProvider` automation steps use the Zip Codes API for radius search, called through the platform proxy at `/external-integrations/proxy/drug_search/zipcodes_api`. The API key for this service is stored encrypted under `services` in `kizen.json`, decryptable only by the Kizen platform.
-- `developer_business_id` in `kizen.json` maps environments (e.g. `staging`) to business ids for developer/testing publishes.
+### Authentication
 
-## Requirements
+- The FDA NDC and both NLM NPI APIs require no authentication.
+- The Zip Codes API key is bundled in `kizen.json` under `services` and is decrypted by the Kizen platform at runtime — no additional setup is needed.
+- `kizen.api` handles authentication automatically using the agentic workflow service account for internal requests.
 
-The plugin's objects and fields are referenced by exact API name throughout the code, so the CRM instance must have the following in place:
+### Schema Requirements
 
-| Object | Required fields |
-|---|---|
-| `client_client` (Contact) | `drugs`, `pharmacies`, `providers` (relationship fields, updated via `add_values`) |
-| `medications_medication` | `name`, `ndc`, `label_name`, `qty`, `freq`, `related_drug_reference_records`, `related_call_summary_records` |
-| `pharmacies_pharmacy` | `name`, `npi`, `pharmacy_name`, `type` (options: `Retail`, `Mail`), `address_street`, `address_street_2`, `address_city`, `address_state`, `address_zip`, `phone`, `related_pharmacy_reference_records`, `related_call_summary_records` |
-| `providers_provider` | `name`, `npi_ce9d20`, `text_1`, `address_fe1155`, `city`, `state` (select field with two-letter state abbreviations as options), `zip`, `related_provider_reference_records`, `related_call_summary_records` |
-| `drug_references` | `name`, `transcript_name`, `brand_name`, `generic_name`, `is_current` (options: `Yes`, `No`), `search_form`, `search_dosage`, `transcript_excerpt`, `extraction_notes`, `primary_call_summary_record`, `match_status` (must include option `Processing`), `raw_model_output`, `refill_extraction_notes`, `failure_message`, `candidate_matches` |
-| `pharmacy_references` | `name`, `transcript_name`, `search_name_variants`, `raw_model_output`, `primary_call_summary_record`, `search_pharmacy_type` (options: `retail`, `mail_order`, `specialty`, `long_term_care`, `compounding`, `unknown`), `search_strategy` (options: `Targeted`, `Radius`), `search_zipcode`, `search_state`, `search_city`, `search_streets`, `search_street_number`, `transcript_excerpt`, `extraction_notes`, `match_status` (must include option `Processing`) |
-| `provider_references` | `name`, `transcript_name`, `primary_call_summary_record`, `is_current` (options: `Yes`, `No`), `search_first_name`, `search_last_name`, `search_first_name_variants`, `search_last_name_variants`, `search_specialty_terms`, `search_strategy` (options: `Targeted`, `Radius`), `search_zipcode`, `search_state`, `search_city`, `search_streets`, `search_street_number`, `search_gender` (options: `Female`, `Male`, `Unknown`), `transcript_excerpt`, `extraction_notes`, `raw_model_output`, `match_status` (must include option `Processing`), `search_hospital_affiliation` |
-| `health_insurance_call_summaries` | `primary_contact_record` (relationship to Contact); records are looked up by name |
-| `phone_call` | `related_contact_records` (relationship to Contact) |
+The plugin references objects and fields by their exact API names, so the target CRM instance must have the following schema in place:
 
-Additional hard-coded preconditions enforced by explicit error checks in the automation steps:
-
-- `linkContactToCallSummary` requires the `phone_call` record it's given to have **exactly one** related contact in `related_contact_records` — it raises an error if there are zero or more than one.
-- `checkRefsComplete` requires `match_status` and `primary_call_summary_record` to exist on `drug_references`, `pharmacy_references`, and `provider_references`, and requires `match_status` to have a `Processing` option — it raises an error naming the missing field/option otherwise.
-- `summarizeFailedLookups` requires a `primary_call_summary_record` field on those same three objects, and requires `health_insurance_call_summaries` records to be found by name and to have an `id` — it raises an error naming what's missing otherwise.
-- `upsertDrug`, `upsertPharmacy`, and `upsertProvider` use each object's `name` field as the upsert lookup key, and require their respective identifying input (`matched_ndc`, `matched_npi`, `matched_npi`) to be present — they raise an error if it's missing or if the upsert call doesn't return a record id.
-- `addProvider` requires `providers_provider`'s `state` field to exist and to have an option matching the two-letter state abbreviation being set, or it shows "State field not found in provider object."
-
-None of the `zipcodes_api` calls in `lookupPharmacy`/`lookupProvider` require separate entitlement setup — `kizen.json` declares `required_entitlement: ""` for that service, and the credential ships bundled (see Configuration above).
-
-JS actions (`src/actions/`) also depend on the CRM framework's `dynamicPrompt`, `currentObject`, `currentEntity`, `actionEntity` (used by the remove actions), `getWithErrors`/`postWithErrors`/`patchWithErrors`, `showToast`, `clearToasts`, and `refreshEntity` methods being available at runtime. Python automation steps (`src/automationSteps/`) depend on the `kizen.api.get`/`post`/`patch` client and an `inputs`/`outputs` contract rather than function parameters and return values.
+| Object                            | Required fields                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `client_client` (Contact)         | `drugs`, `pharmacies`, `providers` (relationship fields)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `medications_medication`          | `name`, `ndc`, `label_name`, `qty`, `freq`, `related_drug_reference_records`, `related_call_summary_records`                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `pharmacies_pharmacy`             | `name`, `npi`, `pharmacy_name`, `type` (`Retail`/`Mail`), `address_street`, `address_street_2`, `address_city`, `address_state`, `address_zip`, `phone`, `related_pharmacy_reference_records`, `related_call_summary_records`                                                                                                                                                                                                                                                                                                                                |
+| `providers_provider`              | `name`, `npi_ce9d20`, `text_1`, `address_fe1155`, `city`, `state` (two-letter abbreviation dropdown field), `zip`, `related_provider_reference_records`, `related_call_summary_records`                                                                                                                                                                                                                                                                                                                                                                      |
+| `drug_references`                 | `name`, `transcript_name`, `brand_name`, `generic_name`, `is_current` (`Yes`/`No`), `search_form`, `search_dosage`, `transcript_excerpt`, `extraction_notes`, `primary_call_summary_record`, `match_status` (`Processing`, `Match`, `No Match`, `Error`), `raw_model_output`, `refill_extraction_notes`, `failure_message`, `candidate_matches`                                                                                                                                                                                                              |
+| `pharmacy_references`             | `name`, `transcript_name`, `search_name_variants`, `raw_model_output`, `primary_call_summary_record`, `search_pharmacy_type`, `search_strategy` (`Targeted`/`Radius`), `search_zipcode`, `search_state`, `search_city`, `search_streets`, `search_street_number`, `transcript_excerpt`, `extraction_notes`, `match_status` (`Processing`, `Match`, `No Match`, `Error`)                                                                                                                                                                                      |
+| `provider_references`             | `name`, `transcript_name`, `primary_call_summary_record`, `is_current` (`Yes`/`No`), `search_first_name`, `search_last_name`, `search_first_name_variants`, `search_last_name_variants`, `search_specialty_terms`, `search_strategy` (`Targeted`/`Radius`), `search_zipcode`, `search_state`, `search_city`, `search_streets`, `search_street_number`, `search_gender` (`Female`/`Male`/`Unknown`), `transcript_excerpt`, `extraction_notes`, `raw_model_output`, `match_status` (`Processing`, `Match`, `No Match`, `Error`), `search_hospital_affiliation` |
+| `health_insurance_call_summaries` | `primary_contact_record` (relationship to Contact)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `phone_call`                      | `related_contact_records` (relationship to Contact)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
