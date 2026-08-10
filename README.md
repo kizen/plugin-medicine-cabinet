@@ -62,7 +62,7 @@ releaseNotes/                       Per-version release notes shown in the Kizen
 
 ### Schema Requirements
 
-The plugin references objects and fields by their exact API names, so the target CRM instance must have the following schema in place:
+The plugin references objects and fields by their exact API names. These are provisioned automatically with the Agent CRM schema. This table is for reference if something is missing or misconfigured.
 
 | Object                            | Required fields                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
