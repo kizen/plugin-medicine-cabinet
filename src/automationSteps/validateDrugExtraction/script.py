@@ -89,4 +89,4 @@ except (json.JSONDecodeError, ValueError) as e:
     medications = []
 
 outputs.invalid_json = invalid_json
-outputs.log(medications)
+outputs.log(f"Validated medications count: {len(medications)}")
