@@ -1,0 +1,187 @@
+{
+  "name": "Lookup Provider",
+  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
+  "action_description": "Search the NLM NPI Registry for a single provider by individual fields and return candidate matches - no records are created or modified",
+  "runtime": "python-3-13",
+  "action_type": "create_event",
+  "script": "script.py",
+  "inputs": [
+    {
+      "name": "provider_first_name",
+      "data_type": "string",
+      "label": "First Name",
+      "description": "Provider's first name",
+      "required": false
+    },
+    {
+      "name": "provider_last_name",
+      "data_type": "string",
+      "label": "Last Name",
+      "description": "Provider's last name",
+      "required": false
+    },
+    {
+      "name": "alternate_first_names",
+      "data_type": "string",
+      "label": "Alternate First Names",
+      "description": "Comma-separated alternate first name spellings (e.g. \"Jon, Johnny\")",
+      "required": false
+    },
+    {
+      "name": "alternate_last_names",
+      "data_type": "string",
+      "label": "Alternate Last Names",
+      "description": "Comma-separated alternate last name spellings",
+      "required": false
+    },
+    {
+      "name": "specialty_search_terms",
+      "data_type": "string",
+      "label": "Specialty Search Terms",
+      "description": "Comma-separated specialty terms to filter by (e.g. \"Cardiology, Internal Medicine\")",
+      "required": false
+    },
+    {
+      "name": "gender",
+      "data_type": "string",
+      "label": "Gender",
+      "description": "Provider gender: 'male', 'female', or 'unknown'",
+      "required": false
+    },
+    {
+      "name": "zip",
+      "data_type": "string",
+      "label": "Zip",
+      "description": "Zip code of the provider's practice location",
+      "required": false
+    },
+    {
+      "name": "state",
+      "data_type": "string",
+      "label": "State",
+      "description": "State of the provider's practice location",
+      "required": false
+    },
+    {
+      "name": "city",
+      "data_type": "string",
+      "label": "City",
+      "description": "City of the provider's practice location",
+      "required": false
+    },
+    {
+      "name": "search_strategy",
+      "data_type": "string",
+      "label": "Search Strategy",
+      "description": "'radius' to expand search to nearest 100 zip codes, 'targeted' to use the exact location (city/state or zip) without expansion.",
+      "required": false
+    },
+    {
+      "name": "streets",
+      "data_type": "string",
+      "label": "Streets",
+      "description": "Comma-separated street address hints to narrow results (e.g. 'Main St, Elm St')",
+      "required": false
+    },
+    {
+      "name": "street_number",
+      "data_type": "string",
+      "label": "Street Number",
+      "description": "Street number to further narrow results when multiple candidates have the same street name",
+      "required": false
+    }
+  ],
+  "outputs": [
+    {
+      "name": "match_status",
+      "data_type": "string",
+      "label": "Match Status",
+      "description": "Result of the lookup: 'Match' if exactly 1 candidate found, 'No Match' if 0 candidates found, or 'Ambiguous' if multiple candidates found",
+      "required": false
+    },
+    {
+      "name": "provider_npi",
+      "data_type": "string",
+      "label": "NPI",
+      "description": "NPI of the matched provider if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "provider_name",
+      "data_type": "string",
+      "label": "Provider Name",
+      "description": "Human-readable provider name (first + last) if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "provider_alias",
+      "data_type": "string",
+      "label": "Provider Alias",
+      "description": "Provider's other name if they have one (e.g. maiden name) if match_status is 'Match' and other name exists, otherwise null",
+      "required": false
+    },
+    {
+      "name": "provider_street",
+      "data_type": "string",
+      "label": "Street",
+      "description": "Provider practice street address if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "provider_city",
+      "data_type": "string",
+      "label": "City",
+      "description": "Provider practice city if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "provider_state",
+      "data_type": "string",
+      "label": "State",
+      "description": "Provider practice state if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "provider_zipcode",
+      "data_type": "string",
+      "label": "Zipcode",
+      "description": "Provider practice zipcode if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "provider_phone",
+      "data_type": "string",
+      "label": "Phone",
+      "description": "Provider practice phone number if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "provider_specialty",
+      "data_type": "string",
+      "label": "Specialty",
+      "description": "Provider specialty if match_status is 'Match', otherwise null",
+      "required": false
+    },
+    {
+      "name": "failure_message",
+      "data_type": "string",
+      "label": "Failure Message",
+      "description": "Human-readable explanation of why the match failed, ready for display",
+      "required": false
+    },
+    {
+      "name": "candidate_matches",
+      "data_type": "string",
+      "label": "Candidate Matches",
+      "description": "JSON array of display strings when match_status is 'Ambiguous', formatted as 'Name, Credential - Specialty - City, State'",
+      "required": false
+    },
+    {
+      "name": "candidate_count",
+      "data_type": "number",
+      "label": "Candidate Count",
+      "description": "Number of provider candidates found",
+      "required": false
+    }
+  ]
+}

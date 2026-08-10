@@ -1,0 +1,47 @@
+{
+  "name": "Summarize Failed Lookups",
+  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
+  "action_description": "Fetches all drug, pharmacy, and provider reference records for a phone call, summarizes match failures and needs-review items, patches the phone call record with the summary, and soft-deletes the reference records.",
+  "runtime": "python-3-13",
+  "action_type": "create_event",
+  "script": "script.py",
+  "inputs": [
+    {
+      "name": "call_summary_name",
+      "data_type": "string",
+      "label": "Call Summary Name",
+      "description": "Name of the phone call summary record to summarize",
+      "required": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "extraction_summary",
+      "data_type": "string",
+      "label": "Extraction Summary",
+      "description": "JSON-encoded structured summary with counts and failure details per category (drugs, pharmacies, providers)",
+      "required": false
+    },
+    {
+      "name": "medication_user_summary",
+      "data_type": "string",
+      "label": "Medication User Summary",
+      "description": "Human-readable summary of medication lookup failures and review items",
+      "required": false
+    },
+    {
+      "name": "pharmacy_user_summary",
+      "data_type": "string",
+      "label": "Pharmacy User Summary",
+      "description": "Human-readable summary of pharmacy lookup failures and review items",
+      "required": false
+    },
+    {
+      "name": "provider_user_summary",
+      "data_type": "string",
+      "label": "Provider User Summary",
+      "description": "Human-readable summary of provider lookup failures and review items",
+      "required": false
+    }
+  ]
+}

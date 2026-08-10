@@ -1,0 +1,8 @@
+.DS_Store
+.planning/
+.kizenapp/
+src/automationSteps/addDrug/test.py
+**/__pycache__/
+CLAUDE.md
+test.py
+*prompt.md

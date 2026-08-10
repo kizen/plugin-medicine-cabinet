@@ -1,0 +1,82 @@
+{
+  "name": "Upsert Pharmacy",
+  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
+  "action_description": "Upserts a pharmacy record in the Pharmacies object using the provided NPI as the lookup key. Links the resulting pharmacy record to the given pharmacy reference record.",
+  "runtime": "python-3-13",
+  "action_type": "create_event",
+  "script": "script.py",
+  "inputs": [
+    {
+      "name": "matched_npi",
+      "data_type": "string",
+      "label": "Matched NPI",
+      "description": "NPI of the pharmacy to upsert",
+      "required": true
+    },
+    {
+      "name": "matched_pharmacy_name",
+      "data_type": "string",
+      "label": "Matched Pharmacy Name",
+      "description": "Name of the matched pharmacy",
+      "required": false
+    },
+    {
+      "name": "matched_street",
+      "data_type": "string",
+      "label": "Matched Street",
+      "description": "Street address of the matched pharmacy",
+      "required": false
+    },
+    {
+      "name": "matched_city",
+      "data_type": "string",
+      "label": "Matched City",
+      "description": "City of the matched pharmacy",
+      "required": false
+    },
+    {
+      "name": "matched_state",
+      "data_type": "string",
+      "label": "Matched State",
+      "description": "State of the matched pharmacy",
+      "required": false
+    },
+    {
+      "name": "matched_zip",
+      "data_type": "string",
+      "label": "Matched Zip",
+      "description": "Zip code of the matched pharmacy",
+      "required": false
+    },
+    {
+      "name": "search_type",
+      "data_type": "string",
+      "label": "Search Type",
+      "description": "'digital' to set type to Mail, otherwise defaults to Retail",
+      "required": false
+    },
+    {
+      "name": "ref_name",
+      "data_type": "string",
+      "label": "Reference Name",
+      "description": "Name of the pharmacy reference record to link to the upserted pharmacy",
+      "required": false
+    },
+    {
+      "name": "call_summary_name",
+      "data_type": "string",
+      "label": "Call Summary Name",
+      "description": "Name of the call summary record to link to the upserted pharmacy",
+      "required": false
+    }
+  ],
+  "outputs": [
+    {
+      "name": "pharmacy_id",
+      "data_type": "string",
+      "label": "Pharmacy ID",
+      "description": "Kizen record ID of the created or updated pharmacy record",
+      "required": false
+    }
+  ]
+}

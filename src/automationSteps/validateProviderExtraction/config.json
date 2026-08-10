@@ -1,0 +1,26 @@
+{
+  "name": "Validate Provider Extraction",
+  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
+  "action_description": "Validates extracted provider JSON entries against the provider schema, including required identity/status fields plus optional search and location field types",
+  "runtime": "python-3-13",
+  "action_type": "create_event",
+  "script": "script.py",
+  "inputs": [
+    {
+      "name": "provider_extraction_json",
+      "data_type": "string",
+      "label": "Provider Extraction JSON",
+      "description": "JSON array string of provider search plan objects to validate.",
+      "required": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "invalid_json",
+      "data_type": "boolean",
+      "label": "Invalid JSON",
+      "description": "True if the input failed validation, false if it passed",
+      "required": false
+    }
+  ]
+}

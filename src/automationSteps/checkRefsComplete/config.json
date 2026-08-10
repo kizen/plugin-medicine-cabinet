@@ -1,0 +1,26 @@
+{
+  "name": "Check Reference Processing Complete",
+  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
+  "action_description": "Queries each reference object (drug, pharmacy, provider) for records linked to the given phone call that still have a blank status. Field IDs are resolved dynamically from field names \u2014 no manual UUID configuration required.",
+  "runtime": "python-3-13",
+  "action_type": "create_event",
+  "script": "script.py",
+  "inputs": [
+    {
+      "name": "call_summary_name",
+      "data_type": "string",
+      "label": "Call Summary Name",
+      "description": "Name of the call summary record to check",
+      "required": true
+    }
+  ],
+  "outputs": [
+    {
+      "name": "is_complete",
+      "data_type": "boolean",
+      "label": "Is Complete",
+      "description": "True if all ref types have zero unprocessed records for this call",
+      "required": false
+    }
+  ]
+}
