@@ -10,7 +10,7 @@
       "name": "provider_extraction_json",
       "data_type": "string",
       "label": "Provider Extraction JSON",
-      "description": "JSON array string of provider search plan objects to validate, each with name, status, review_needed, geographic_search, etc.",
+      "description": "JSON array string of provider search plan objects to validate.",
       "required": true
     }
   ],

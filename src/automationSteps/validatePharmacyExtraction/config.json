@@ -10,7 +10,7 @@
       "name": "extracted_pharmacies_json",
       "data_type": "string",
       "label": "Extracted Pharmacies JSON",
-      "description": "JSON array string of pharmacy objects to validate (e.g., name, optional type/status/search_strategy, name_variants, and location fields)",
+      "description": "JSON array string of pharmacy objects to validate.",
       "required": true
     }
   ],
