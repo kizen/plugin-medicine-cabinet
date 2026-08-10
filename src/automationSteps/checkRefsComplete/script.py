@@ -67,7 +67,7 @@ def get_field_ids(object_api_name: str) -> tuple[str, str, str]:
 
 def count_unprocessed(object_api_name: str, status_field_id: str, call_summary_field_id: str, processing_stage_id: str, call_summary_id: str) -> int:
     """
-    Returns count of ref records linked to the phone call with a blank status.
+    Returns count of ref records linked to the phone call with a match_status = "Processing".
     Returns -1 on API error.
     """
     query = {
