@@ -1,9 +1,7 @@
 {
   "name": "Lookup Provider",
-  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
   "action_description": "Search the NLM NPI Registry for a single provider by individual fields and return candidate matches - no records are created or modified",
   "runtime": "python-3-13",
-  "action_type": "create_event",
   "script": "script.py",
   "inputs": [
     {

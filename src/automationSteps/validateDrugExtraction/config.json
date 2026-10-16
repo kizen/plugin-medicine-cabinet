@@ -1,9 +1,7 @@
 {
   "name": "Validate Drug Extraction",
-  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
   "action_description": "Validates extracted medication JSON entries against the medication schema, including required keys, allowed status values, and expected field types",
   "runtime": "python-3-13",
-  "action_type": "create_event",
   "script": "script.py",
   "inputs": [
     {

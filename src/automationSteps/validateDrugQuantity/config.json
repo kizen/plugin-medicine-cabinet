@@ -1,9 +1,7 @@
 {
   "name": "Validate Drug Quantity",
-  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
   "action_description": "Validates the structure, types, and enum values of a refill extraction JSON string",
   "runtime": "python-3-13",
-  "action_type": "create_event",
   "script": "script.py",
   "inputs": [
     {

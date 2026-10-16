@@ -1,9 +1,7 @@
 {
   "name": "Summarize Failed Lookups",
-  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
   "action_description": "Fetches all drug, pharmacy, and provider reference records for a phone call, summarizes match failures and needs-review items, patches the phone call record with the summary, and soft-deletes the reference records.",
   "runtime": "python-3-13",
-  "action_type": "create_event",
   "script": "script.py",
   "inputs": [
     {

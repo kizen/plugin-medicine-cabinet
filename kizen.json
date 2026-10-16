@@ -1,9 +1,10 @@
 [
   {
     "name": "Medicine Cabinet",
-    "version": "1.6.0",
+    "version": "1.6.1",
     "api_name": "drug_search",
     "description": "Search for medications, pharmacies, or providers, and add them to a contact's profile for enrollment quotes",
+    "agentic_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
     "release_branches": ["main"],
     "release_environments": ["fmo", "dev"],
     "entry": "src/",
