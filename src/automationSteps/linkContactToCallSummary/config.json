@@ -1,9 +1,7 @@
 {
   "name": "Link Contact to Call Summary",
-  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
   "action_description": "Fetches the phone call record, asserts exactly one contact is linked, then patches the call summary record (<call_name> Summary) to set its primary_contact_record field",
   "runtime": "python-3-13",
-  "action_type": "create_event",
   "script": "script.py",
   "inputs": [
     {

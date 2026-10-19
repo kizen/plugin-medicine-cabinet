@@ -1,9 +1,7 @@
 {
   "name": "Lookup Pharmacy",
-  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
   "action_description": "Search the NLM NPI Registry for a single pharmacy by name and location hints. Returns individual fields if exactly one match is found, or a formatted list string if multiple matches are found.",
   "runtime": "python-3-13",
-  "action_type": "create_event",
   "script": "script.py",
   "inputs": [
     {

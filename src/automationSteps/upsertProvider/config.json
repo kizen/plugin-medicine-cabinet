@@ -1,9 +1,7 @@
 {
   "name": "Upsert Provider",
-  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
   "action_description": "Upserts a provider record in the Providers object using the NPI as the lookup key. Optionally links the resulting provider record to the given provider reference record.",
   "runtime": "python-3-13",
-  "action_type": "create_event",
   "script": "script.py",
   "inputs": [
     {

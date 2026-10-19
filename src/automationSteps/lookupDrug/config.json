@@ -1,9 +1,7 @@
 {
   "name": "Lookup Drug",
-  "plugin_description": "Sync medications, pharmacies, and providers from call transcripts to Contact records",
   "action_description": "Search the FDA NDC database for a single drug entry and return the match result - no records are created or modified",
   "runtime": "python-3-13",
-  "action_type": "create_event",
   "secrets": [],
   "script": "script.py",
   "inputs": [
